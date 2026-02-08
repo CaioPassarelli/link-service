@@ -7,6 +7,7 @@ async function boostrap() {
   const logger = new Logger('Bootstrap')
   const app = await NestFactory.create(AppModule)
   const port = process.env.PORT ?? 3000
+  app.enableShutdownHooks()
 
   const config = new DocumentBuilder()
     .setTitle('Link Service - API')
