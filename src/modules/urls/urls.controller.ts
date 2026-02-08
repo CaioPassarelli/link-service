@@ -1,34 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Req, Res } from '@nestjs/common';
 import { UrlsService } from './urls.service';
 import { CreateUrlDto } from './dto/create-url.dto';
-import { UpdateUrlDto } from './dto/update-url.dto';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { Response } from 'express';
 
-@Controller('urls')
+@Controller()
 export class UrlsController {
   constructor(private readonly urlsService: UrlsService) {}
 
-  @Post()
-  create(@Body() createUrlDto: CreateUrlDto) {
-    return this.urlsService.create(createUrlDto);
+  @Post('urls')
+  @UseGuards(OptionalJwtAuthGuard)
+  async create(
+    @Body() createUrlDto: CreateUrlDto, 
+    @Req() req
+  ) {
+    const userId = req.user?.id
+    return this.urlsService.shorten(createUrlDto, userId)
   }
 
-  @Get()
-  findAll() {
-    return this.urlsService.findAll();
-  }
+  @Get(':code')
+  async redirect(
+    @Param('code') code: string, 
+    @Res() res: Response) {
+      const url = await this.urlsService.findOneByCode(code)
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.urlsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUrlDto: UpdateUrlDto) {
-    return this.urlsService.update(+id, updateUrlDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.urlsService.remove(+id);
-  }
+      return res.redirect(url.originalUrl)
+    }
 }
