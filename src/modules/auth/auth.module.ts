@@ -12,7 +12,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     UsersModule,
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'procurar qual a melhor pratica para deixar aqui',
+      secret: process.env.JWT_SECRET || 'hashPassword',
       signOptions: { expiresIn: '1h' }
     })
   ],
