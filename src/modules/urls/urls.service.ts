@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { UpdateUrlDto } from './dto/update-url.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -67,23 +67,58 @@ export class UrlsService {
     return url
   }
 
-  create(createUrlDto: CreateUrlDto) {
-    return 'This action adds a new url';
+  async findAllByUserId(userId: string) {
+    return this.prisma.url.findMany({
+      where: {
+        userId,
+        deletedAt: null
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
   }
 
-  findAll() {
-    return `This action returns all urls`;
+  async update(id: string, updateUrlDto: UpdateUrlDto, userId: string) {
+    const url = await this.prisma.url.findUnique({
+      where: { id },
+    })
+
+    if (!url) {
+      throw new NotFoundException('URL não encontrada.')
+    }
+
+    if (url.userId !== userId) {
+      throw new ForbiddenException('Você não tem permissão para editar essa URL.')
+    }
+
+    return this.prisma.url.update({
+      where: { id },
+      data: {
+        originalUrl: updateUrlDto.originalUrl,
+        updatedAt: new Date()
+      }
+    })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} url`;
-  }
+  async remove(id: string, userId: string) {
+    const url = await this.prisma.url.findUnique({
+      where: { id }
+    })
 
-  update(id: number, updateUrlDto: UpdateUrlDto) {
-    return `This action updates a #${id} url`;
-  }
+    if (!url) {
+      throw new NotFoundException('URL não encontrada.')
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} url`;
+    if (url.userId !== userId) {
+      throw new ForbiddenException('Você não tem permissão para excluir essa URL.')
+    }
+
+    return this.prisma.url.update({
+      where: { id },
+      data: {
+        deletedAt: new Date()
+      }
+    })
   }
 }
