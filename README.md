@@ -28,6 +28,17 @@ A maneira mais simples de rodar o projeto é utilizando Docker Compose.
 ### Pré-requisitos
 - Docker e Docker Compose instalados.
 
+## Nota para Usuários Windows
+
+Este projeto foi desenvolvido em ambiente Linux. Para garantir a melhor experiência ao rodar no Windows, recomendo fortemente o uso do **WSL 2 (Windows Subsystem for Linux)** ou do terminal **Git Bash**.
+
+Caso opte por usar o **PowerShell**, atente-se aos seguintes ajustes:
+
+1. **Geração do JWT Secret:**
+   O comando `openssl` pode não estar disponível nativamente. Utilize o comando abaixo no PowerShell para gerar uma hash segura:
+   ```powershell
+   [Convert]::ToBase64String((1..32 | %{ [byte](Get-Random -Max 256) }))
+
 ### Passo a Passo
 
 1. **Clone o repositório:**
@@ -51,7 +62,7 @@ A maneira mais simples de rodar o projeto é utilizando Docker Compose.
 
 4. **Suba a aplicação:**
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
    *Aguarde até ver a mensagem "Nest application successfully started".*
 
